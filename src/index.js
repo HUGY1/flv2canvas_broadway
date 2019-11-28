@@ -1,0 +1,1 @@
+module.exports = require('./flv2canvas.js').default;

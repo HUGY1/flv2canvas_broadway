@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <title>flv2canvas.js broadway</title>
+    <style>
+        .liveCanvas {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <button id="play">播放</button>
+    <button id="stop">暂停</button>
+    <button id='destory'>销毁</button>
+    <div id='fetch'></div>
+    <p id='log'></p>
+    <div class="mainContainer">
+        <canvas id='player'></canvas>
+    </div>
+
+    <script src="../dist/flv2canvas.js"></script>
+    <script src="vconsole.min.js"></script>
+    <script>
+        if(window.fetch){
+            document.getElementById('fetch').innerHTML = '支持fetch'
+        } else{
+
+            document.getElementById('fetch').innerHTML = '不支持fetch'
+        }
+
+
+        var vConsole = new VConsole();
+
+        let player = new flv2canvas({
+            url: 'http://61.244.77.225:7980/live/vip1-02hd.flv',
+            // url: 'http://live.vpcdn.com/obs/012.flv',
+            workFile: './decoder/Decoder1.js',
+            canvasDom: document.getElementById('player')
+        })
+
+       
+
+        document.getElementById('play').onclick = function () {
+            player.play()
+        }
+
+        document.getElementById('stop').onclick = function () {
+            player.stop()
+        }
+
+        document.getElementById('destory').onclick = function () {
+            document.getElementById('player').remove();
+            player.destory()
+        }
+    </script>
+
+</body>
+
+</html>
