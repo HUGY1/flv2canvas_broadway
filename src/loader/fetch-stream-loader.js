@@ -140,6 +140,7 @@ class FetchStreamLoader extends BaseLoader {
                 let byteStart = this._range.from + this._receivedLength;
                 this._receivedLength += chunk.byteLength;
                 if (this._onDataArrival) {
+                    console.log(chunk);
                     this._onDataArrival(chunk, byteStart, this._receivedLength);
                 }
                 this._pump(reader);

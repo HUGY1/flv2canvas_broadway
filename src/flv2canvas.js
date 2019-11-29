@@ -107,12 +107,10 @@ class flv2canvas {
         this.canvasObj = this.createCanvasObj();
         this.canvasObj.canvas = this.options.canvasDom;
         let last = Date.now();
-        let frameTimestamp = 0;
         let diffTime = 0;
         let noData = 0;
-        let interval = 1000 / 20;
-        let wait = 0;
-        let speed = 0;
+        let fps = 20;
+        let interval = 1000 / fps;
         let isLoading = false;
 
         doRender();
@@ -169,38 +167,22 @@ class flv2canvas {
 
             // 减速
             if (self.videoBuffer.length < 15) {
-                wait++;
-                if (wait >= 5 && self.videoBuffer[0]) {
-                    // console.log('slow', wait)
-                    self.renderFrame({
-                        canvasObj: self.canvasObj,
-                        data: self.videoBuffer[0],
-                        width: self.playWidth,
-                        height: self.playHeight
-                    });
-                    self.videoBuffer.shift();
-                    wait = 0;
-                }
-                return;
+                fps = 10;
+                interval = 1000 / fps;
             }
 
             // 加速
             if (self.videoBuffer.length > 40) {
-                speed++;
-                // console.log('speed up', self.videoBuffer.length);
+                fps = 25;
+                interval = 1000 / fps;
             }
 
-            if (speed > 4 && self.videoBuffer[0]) {
-                self.renderFrame({
-                    canvasObj: self.canvasObj,
-                    data: self.videoBuffer[0],
-                    width: self.playWidth,
-                    height: self.playHeight
-                });
-                self.videoBuffer.shift();
-                speed = 0;
-                return;
+            if (self.videoBuffer.length > 25 && self.videoBuffer.length < 40) {
+                fps = 20;
+                interval = 1000 / fps;
             }
+
+            // console.log('length', self.videoBuffer.length);
 
             // 满足帧数条件
             if (diffTime < interval) {

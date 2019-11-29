@@ -21,7 +21,7 @@ class IOController {
         this._bufferSize = 1024 * 1024 * 3;  // initial size: 3MB
         this._stashBuffer = new ArrayBuffer(this._bufferSize);
         this._stashByteStart = 0;
-        this._enableStash = true;
+        this._enableStash = false;
         if (config.enableStashBuffer === false) {
             this._enableStash = false;
         }
@@ -169,7 +169,6 @@ class IOController {
                 this._adjustStashSize(normalized);
             }
         }
-
         if (!this._enableStash) {  // disable stash
             if (this._stashUsed === 0) {
                     // dispatch chunk directly to consumer;
@@ -294,6 +293,7 @@ class IOController {
         if (bufferNewSize === this._bufferSize) {
             return;
         }
+        console.log(bufferNewSize);
 
         let newBuffer = new ArrayBuffer(bufferNewSize);
 
@@ -305,6 +305,7 @@ class IOController {
 
         this._stashBuffer = newBuffer;
         this._bufferSize = bufferNewSize;
+
     }
 
     _dispatchChunks(chunks, byteStart) {

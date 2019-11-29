@@ -2308,7 +2308,7 @@ var AMF = function () {
 
 exports.default = AMF;
 
-},{"../utils/exception.js":20,"../utils/logger.js":21,"../utils/utf8-conv.js":23}],6:[function(_dereq_,module,exports){
+},{"../utils/exception.js":19,"../utils/logger.js":20,"../utils/utf8-conv.js":22}],6:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2479,7 +2479,7 @@ var ExpGolomb = function () {
 
 exports.default = ExpGolomb;
 
-},{"../utils/exception.js":20}],8:[function(_dereq_,module,exports){
+},{"../utils/exception.js":19}],8:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3756,7 +3756,7 @@ var FLVDemuxer = function () {
 
 exports.default = FLVDemuxer;
 
-},{"../core/media-info.js":4,"../utils/exception.js":20,"../utils/logger.js":21,"./amf-parser.js":5,"./demux-errors.js":6,"./sps-parser.js":9}],9:[function(_dereq_,module,exports){
+},{"../core/media-info.js":4,"../utils/exception.js":19,"../utils/logger.js":20,"./amf-parser.js":5,"./demux-errors.js":6,"./sps-parser.js":9}],9:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -4202,12 +4202,10 @@ var flv2canvas = function () {
             this.canvasObj = this.createCanvasObj();
             this.canvasObj.canvas = this.options.canvasDom;
             var last = Date.now();
-            var frameTimestamp = 0;
             var diffTime = 0;
             var noData = 0;
-            var interval = 1000 / 20;
-            var wait = 0;
-            var speed = 0;
+            var fps = 20;
+            var interval = 1000 / fps;
             var isLoading = false;
 
             doRender();
@@ -4263,38 +4261,22 @@ var flv2canvas = function () {
 
                 // 减速
                 if (self.videoBuffer.length < 15) {
-                    wait++;
-                    if (wait >= 5 && self.videoBuffer[0]) {
-                        // console.log('slow', wait)
-                        self.renderFrame({
-                            canvasObj: self.canvasObj,
-                            data: self.videoBuffer[0],
-                            width: self.playWidth,
-                            height: self.playHeight
-                        });
-                        self.videoBuffer.shift();
-                        wait = 0;
-                    }
-                    return;
+                    fps = 10;
+                    interval = 1000 / fps;
                 }
 
                 // 加速
                 if (self.videoBuffer.length > 40) {
-                    speed++;
-                    // console.log('speed up', self.videoBuffer.length);
+                    fps = 25;
+                    interval = 1000 / fps;
                 }
 
-                if (speed > 4 && self.videoBuffer[0]) {
-                    self.renderFrame({
-                        canvasObj: self.canvasObj,
-                        data: self.videoBuffer[0],
-                        width: self.playWidth,
-                        height: self.playHeight
-                    });
-                    self.videoBuffer.shift();
-                    speed = 0;
-                    return;
+                if (self.videoBuffer.length > 25 && self.videoBuffer.length < 40) {
+                    fps = 20;
+                    interval = 1000 / fps;
                 }
+
+                // console.log('length', self.videoBuffer.length);
 
                 // 满足帧数条件
                 if (diffTime < interval) {
@@ -4449,7 +4431,7 @@ var flv2canvas = function () {
 
 exports.default = flv2canvas;
 
-},{"./flv2canvas.loader":11,"./render/yuv-canvas":18}],11:[function(_dereq_,module,exports){
+},{"./flv2canvas.loader":11,"./render/yuv-canvas":17}],11:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -4546,7 +4528,7 @@ var Flv2CanvasLoader = function () {
 
 exports.default = Flv2CanvasLoader;
 
-},{"./loader/io-controller":14,"./utils/polyfill.js":22}],12:[function(_dereq_,module,exports){
+},{"./loader/io-controller":14,"./utils/polyfill.js":21}],12:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = _dereq_('./flv2canvas.js').default;
@@ -4734,6 +4716,7 @@ var FetchStreamLoader = function (_BaseLoader) {
                     var byteStart = _this3._range.from + _this3._receivedLength;
                     _this3._receivedLength += chunk.byteLength;
                     if (_this3._onDataArrival) {
+                        console.log(chunk);
                         _this3._onDataArrival(chunk, byteStart, _this3._receivedLength);
                     }
                     _this3._pump(reader);
@@ -4797,7 +4780,7 @@ var FetchStreamLoader = function (_BaseLoader) {
 
 exports.default = FetchStreamLoader;
 
-},{"../utils/browser.js":19,"./loader.js":15}],14:[function(_dereq_,module,exports){
+},{"../utils/browser.js":18,"./loader.js":15}],14:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -4805,17 +4788,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-// import MozChunkedLoader from './xhr-moz-chunked-loader.js';
-// import {RuntimeException} from '../utils/exception.js';
-
 
 var _fetchStreamLoader = _dereq_('./fetch-stream-loader.js');
 
 var _fetchStreamLoader2 = _interopRequireDefault(_fetchStreamLoader);
-
-var _xhrRangeLoader = _dereq_('./xhr-range-loader.js');
-
-var _xhrRangeLoader2 = _interopRequireDefault(_xhrRangeLoader);
 
 var _events = _dereq_('events');
 
@@ -4849,7 +4825,7 @@ var IOController = function () {
         this._bufferSize = 1024 * 1024 * 3; // initial size: 3MB
         this._stashBuffer = new ArrayBuffer(this._bufferSize);
         this._stashByteStart = 0;
-        this._enableStash = true;
+        this._enableStash = false;
         if (config.enableStashBuffer === false) {
             this._enableStash = false;
         }
@@ -4872,14 +4848,6 @@ var IOController = function () {
             if (_fetchStreamLoader2.default.isSupported()) {
                 this._loaderClass = _fetchStreamLoader2.default;
             }
-            // if (RangeLoader.isSupported()) {
-            //     this._loaderClass = RangeLoader;
-            // }
-            // else if (MozChunkedLoader.isSupported()) {
-            //     this._loaderClass = MozChunkedLoader;
-            // }  else {
-            //     throw new RuntimeException('Your browser doesn\'t support xhr with arraybuffer responseType!');
-            // }
         }
     }, {
         key: '_createLoader',
@@ -5009,7 +4977,6 @@ var IOController = function () {
                     this._adjustStashSize(normalized);
                 }
             }
-
             if (!this._enableStash) {
                 // disable stash
                 if (this._stashUsed === 0) {
@@ -5140,6 +5107,7 @@ var IOController = function () {
             if (bufferNewSize === this._bufferSize) {
                 return;
             }
+            console.log(bufferNewSize);
 
             var newBuffer = new ArrayBuffer(bufferNewSize);
 
@@ -5199,7 +5167,7 @@ var IOController = function () {
 
 exports.default = IOController;
 
-},{"../demux/flv-demuxer.js":8,"./fetch-stream-loader.js":13,"./speed-sampler.js":16,"./xhr-range-loader.js":17,"events":2}],15:[function(_dereq_,module,exports){
+},{"../demux/flv-demuxer.js":8,"./fetch-stream-loader.js":13,"./speed-sampler.js":16,"events":2}],15:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -5475,452 +5443,6 @@ var SpeedSampler = function () {
 exports.default = SpeedSampler;
 
 },{}],17:[function(_dereq_,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _speedSampler = _dereq_('./speed-sampler.js');
-
-var _speedSampler2 = _interopRequireDefault(_speedSampler);
-
-var _loader = _dereq_('./loader.js');
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /*
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Copyright (C) 2016 Bilibili. All Rights Reserved.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * @author zheng qian <xqq@xqq.im>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Licensed under the Apache License, Version 2.0 (the "License");
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * you may not use this file except in compliance with the License.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * You may obtain a copy of the License at
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *     http://www.apache.org/licenses/LICENSE-2.0
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Unless required by applicable law or agreed to in writing, software
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * distributed under the License is distributed on an "AS IS" BASIS,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * See the License for the specific language governing permissions and
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * limitations under the License.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
-
-// import Log from '../utils/logger.js';
-
-
-// import {RuntimeException} from '../utils/exception.js';
-
-// Universal IO Loader, implemented by adding Range header in xhr's request header
-var RangeLoader = function (_BaseLoader) {
-    _inherits(RangeLoader, _BaseLoader);
-
-    _createClass(RangeLoader, null, [{
-        key: 'isSupported',
-        value: function isSupported() {
-            try {
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', 'https://example.com', true);
-                xhr.responseType = 'arraybuffer';
-                return xhr.responseType === 'arraybuffer';
-            } catch (e) {
-                // Log.w('RangeLoader', e.message);
-                return false;
-            }
-        }
-    }]);
-
-    function RangeLoader(config, seekHandler) {
-        _classCallCheck(this, RangeLoader);
-
-        var _this = _possibleConstructorReturn(this, (RangeLoader.__proto__ || Object.getPrototypeOf(RangeLoader)).call(this, 'xhr-range-loader'));
-
-        _this.TAG = 'RangeLoader';
-
-        _this._seekHandler = seekHandler;
-        _this._config = config;
-        _this._needStash = false;
-
-        _this._chunkSizeKBList = [128, 256, 384, 512, 768, 1024, 1536, 2048, 3072, 4096, 5120, 6144, 7168, 8192];
-        _this._currentChunkSizeKB = 384;
-        _this._currentSpeedNormalized = 0;
-        _this._zeroSpeedChunkCount = 0;
-
-        _this._xhr = null;
-        _this._speedSampler = new _speedSampler2.default();
-
-        _this._requestAbort = false;
-        _this._waitForTotalLength = false;
-        _this._totalLengthReceived = false;
-
-        _this._currentRequestURL = null;
-        _this._currentRedirectedURL = null;
-        _this._currentRequestRange = null;
-        _this._totalLength = null; // size of the entire file
-        _this._contentLength = null; // Content-Length of entire request range
-        _this._receivedLength = 0; // total received bytes
-        _this._lastTimeLoaded = 0; // received bytes of current request sub-range
-        return _this;
-    }
-
-    _createClass(RangeLoader, [{
-        key: 'destroy',
-        value: function destroy() {
-            if (this.isWorking()) {
-                this.abort();
-            }
-            if (this._xhr) {
-                this._xhr.onreadystatechange = null;
-                this._xhr.onprogress = null;
-                this._xhr.onload = null;
-                this._xhr.onerror = null;
-                this._xhr = null;
-            }
-            _get(RangeLoader.prototype.__proto__ || Object.getPrototypeOf(RangeLoader.prototype), 'destroy', this).call(this);
-        }
-    }, {
-        key: 'open',
-        value: function open(dataSource, range) {
-            // this._dataSource = dataSource;
-            // this._range = range;
-            // this._status = LoaderStatus.kConnecting;
-
-            // let useRefTotalLength = false;
-            // if (this._dataSource.filesize != undefined && this._dataSource.filesize !== 0) {
-            //     useRefTotalLength = true;
-            //     this._totalLength = this._dataSource.filesize;
-            // }
-
-            // if (!this._totalLengthReceived && !useRefTotalLength) {
-            //     // We need total filesize
-            //     this._waitForTotalLength = true;
-            //     this._internalOpen(this._dataSource, {from: 0, to: -1});
-            // } else {
-            //     // We have filesize, start loading
-            //     this._openSubRange();
-            // }
-
-            // this._lastTimeLoaded = 0;
-
-            // let sourceURL = dataSource.url;
-            // if (this._config.reuseRedirectedURL) {
-            //     if (this._currentRedirectedURL != undefined) {
-            //         sourceURL = this._currentRedirectedURL;
-            //     } else if (dataSource.redirectedURL != undefined) {
-            //         sourceURL = dataSource.redirectedURL;
-            //     }
-            // }
-
-            // let seekConfig = this._seekHandler.getConfig(sourceURL, range);
-            // this._currentRequestURL = seekConfig.url;
-
-            var xhr = this._xhr = new XMLHttpRequest();
-            xhr.open('GET', this._config.url, true);
-            xhr.responseType = 'arraybuffer';
-            xhr.onreadystatechange = this._onReadyStateChange.bind(this);
-            xhr.onprogress = this._onProgress.bind(this);
-            xhr.onload = this._onLoad.bind(this);
-            xhr.onerror = this._onXhrError.bind(this);
-
-            // if (dataSource.withCredentials) {
-            //     xhr.withCredentials = true;
-            // }
-
-            // if (typeof seekConfig.headers === 'object') {
-            //     let headers = seekConfig.headers;
-
-            //     for (let key in headers) {
-            //         if (headers.hasOwnProperty(key)) {
-            //             xhr.setRequestHeader(key, headers[key]);
-            //         }
-            //     }
-            // }
-
-            // add additional headers
-            if (_typeof(this._config.headers) === 'object') {
-                var headers = this._config.headers;
-
-                for (var key in headers) {
-                    if (headers.hasOwnProperty(key)) {
-                        xhr.setRequestHeader(key, headers[key]);
-                    }
-                }
-            }
-
-            xhr.send();
-        }
-    }, {
-        key: '_openSubRange',
-        value: function _openSubRange() {
-            var chunkSize = this._currentChunkSizeKB * 1024;
-
-            var from = this._range.from + this._receivedLength;
-            var to = from + chunkSize;
-
-            if (this._contentLength != null) {
-                if (to - this._range.from >= this._contentLength) {
-                    to = this._range.from + this._contentLength - 1;
-                }
-            }
-
-            this._currentRequestRange = { from: from, to: to };
-            this._internalOpen(this._dataSource, this._currentRequestRange);
-        }
-    }, {
-        key: '_internalOpen',
-        value: function _internalOpen(dataSource, range) {
-            this._lastTimeLoaded = 0;
-
-            var sourceURL = dataSource.url;
-            if (this._config.reuseRedirectedURL) {
-                if (this._currentRedirectedURL != undefined) {
-                    sourceURL = this._currentRedirectedURL;
-                } else if (dataSource.redirectedURL != undefined) {
-                    sourceURL = dataSource.redirectedURL;
-                }
-            }
-
-            var seekConfig = this._seekHandler.getConfig(sourceURL, range);
-            this._currentRequestURL = seekConfig.url;
-
-            var xhr = this._xhr = new XMLHttpRequest();
-            xhr.open('GET', seekConfig.url, true);
-            xhr.responseType = 'arraybuffer';
-            // xhr.onreadystatechange = this._onReadyStateChange.bind(this);
-            // xhr.onprogress = this._onProgress.bind(this);
-            xhr.onload = this._onLoad.bind(this);
-            xhr.onerror = this._onXhrError.bind(this);
-
-            if (dataSource.withCredentials) {
-                xhr.withCredentials = true;
-            }
-
-            if (_typeof(seekConfig.headers) === 'object') {
-                var headers = seekConfig.headers;
-
-                for (var key in headers) {
-                    if (headers.hasOwnProperty(key)) {
-                        xhr.setRequestHeader(key, headers[key]);
-                    }
-                }
-            }
-
-            // add additional headers
-            if (_typeof(this._config.headers) === 'object') {
-                var _headers = this._config.headers;
-
-                for (var _key in _headers) {
-                    if (_headers.hasOwnProperty(_key)) {
-                        xhr.setRequestHeader(_key, _headers[_key]);
-                    }
-                }
-            }
-
-            xhr.send();
-        }
-    }, {
-        key: 'abort',
-        value: function abort() {
-            this._requestAbort = true;
-            this._internalAbort();
-            this._status = _loader.LoaderStatus.kComplete;
-        }
-    }, {
-        key: '_internalAbort',
-        value: function _internalAbort() {
-            if (this._xhr) {
-                this._xhr.onreadystatechange = null;
-                this._xhr.onprogress = null;
-                this._xhr.onload = null;
-                this._xhr.onerror = null;
-                this._xhr.abort();
-                this._xhr = null;
-            }
-        }
-    }, {
-        key: '_onReadyStateChange',
-        value: function _onReadyStateChange(e) {
-            var xhr = e.target;
-            if (xhr.readyState === 2) {
-                // HEADERS_RECEIVED
-                if (xhr.responseURL != undefined) {
-                    // if the browser support this property
-                    var redirectedURL = this._seekHandler.removeURLParameters(xhr.responseURL);
-                    if (xhr.responseURL !== this._currentRequestURL && redirectedURL !== this._currentRedirectedURL) {
-                        this._currentRedirectedURL = redirectedURL;
-                        if (this._onURLRedirect) {
-                            this._onURLRedirect(redirectedURL);
-                        }
-                    }
-                }
-
-                if (xhr.status >= 200 && xhr.status <= 299) {
-                    if (this._waitForTotalLength) {
-                        return;
-                    }
-                    this._status = _loader.LoaderStatus.kBuffering;
-                } else {
-                    this._status = _loader.LoaderStatus.kError;
-                    if (this._onError) {
-                        this._onError(_loader.LoaderErrors.HTTP_STATUS_CODE_INVALID, { code: xhr.status, msg: xhr.statusText });
-                    } else {
-                        // throw new RuntimeException('RangeLoader: Http code invalid, ' + xhr.status + ' ' + xhr.statusText);
-                    }
-                }
-            }
-        }
-    }, {
-        key: '_onProgress',
-        value: function _onProgress(e) {
-            if (this._status === _loader.LoaderStatus.kError) {
-                // Ignore error response
-                return;
-            }
-
-            // if (this._contentLength === null) {
-            //     if (e.total !== null && e.total !== 0) {
-            //         this._contentLength = e.total;
-            //         if (this._onContentLengthKnown) {
-            //             this._onContentLengthKnown(this._contentLength);
-            //         }
-            //     }
-            // }
-
-            var chunk = e.target.response;
-
-            // let byteStart = this._range.from + this._receivedLength;
-            // this._receivedLength += chunk.byteLength;
-
-            // if (this._onDataArrival) {
-            //     this._onDataArrival(chunk, byteStart, this._receivedLength);
-            // }
-        }
-    }, {
-        key: '_normalizeSpeed',
-        value: function _normalizeSpeed(input) {
-            var list = this._chunkSizeKBList;
-            var last = list.length - 1;
-            var mid = 0;
-            var lbound = 0;
-            var ubound = last;
-
-            if (input < list[0]) {
-                return list[0];
-            }
-
-            while (lbound <= ubound) {
-                mid = lbound + Math.floor((ubound - lbound) / 2);
-                if (mid === last || input >= list[mid] && input < list[mid + 1]) {
-                    return list[mid];
-                } else if (list[mid] < input) {
-                    lbound = mid + 1;
-                } else {
-                    ubound = mid - 1;
-                }
-            }
-        }
-    }, {
-        key: '_onLoad',
-        value: function _onLoad(e) {
-
-            if (this._status === _loader.LoaderStatus.kError) {
-                // Ignore error response
-                return;
-            }
-
-            if (this._waitForTotalLength) {
-                this._waitForTotalLength = false;
-                return;
-            }
-
-            this._lastTimeLoaded = 0;
-            var KBps = this._speedSampler.lastSecondKBps;
-            if (KBps === 0) {
-                this._zeroSpeedChunkCount++;
-                if (this._zeroSpeedChunkCount >= 3) {
-                    // Try get currentKBps after 3 chunks
-                    KBps = this._speedSampler.currentKBps;
-                }
-            }
-
-            if (KBps !== 0) {
-                var normalized = this._normalizeSpeed(KBps);
-                if (this._currentSpeedNormalized !== normalized) {
-                    this._currentSpeedNormalized = normalized;
-                    this._currentChunkSizeKB = normalized;
-                }
-            }
-
-            var chunk = e.target.response;
-            var byteStart = this._range.from + this._receivedLength;
-            this._receivedLength += chunk.byteLength;
-
-            var reportComplete = false;
-
-            if (this._contentLength != null && this._receivedLength < this._contentLength) {
-                // continue load next chunk
-                this._openSubRange();
-            } else {
-                reportComplete = true;
-            }
-
-            // dispatch received chunk
-            if (this._onDataArrival) {
-                this._onDataArrival(chunk, byteStart, this._receivedLength);
-            }
-
-            if (reportComplete) {
-                this._status = _loader.LoaderStatus.kComplete;
-                if (this._onComplete) {
-                    this._onComplete(this._range.from, this._range.from + this._receivedLength - 1);
-                }
-            }
-        }
-    }, {
-        key: '_onXhrError',
-        value: function _onXhrError(e) {
-            this._status = _loader.LoaderStatus.kError;
-            var type = 0;
-            var info = null;
-
-            if (this._contentLength && this._receivedLength > 0 && this._receivedLength < this._contentLength) {
-                type = _loader.LoaderErrors.EARLY_EOF;
-                info = { code: -1, msg: 'RangeLoader meet Early-Eof' };
-            } else {
-                type = _loader.LoaderErrors.EXCEPTION;
-                info = { code: -1, msg: e.constructor.name + ' ' + e.type };
-            }
-
-            if (this._onError) {
-                this._onError(type, info);
-            } else {
-                // throw new RuntimeException(info.msg);
-            }
-        }
-    }, {
-        key: 'currentSpeed',
-        get: function get() {
-            return this._speedSampler.lastSecondKBps;
-        }
-    }]);
-
-    return RangeLoader;
-}(_loader.BaseLoader);
-
-exports.default = RangeLoader;
-
-},{"./loader.js":15,"./speed-sampler.js":16}],18:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -6352,7 +5874,7 @@ var YUVCanvas = function () {
 
 exports.default = YUVCanvas;
 
-},{}],19:[function(_dereq_,module,exports){
+},{}],18:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -6466,7 +5988,7 @@ detect();
 
 exports.default = Browser;
 
-},{}],20:[function(_dereq_,module,exports){
+},{}],19:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -6583,7 +6105,7 @@ var NotImplementedException = exports.NotImplementedException = function (_Runti
     return NotImplementedException;
 }(RuntimeException);
 
-},{}],21:[function(_dereq_,module,exports){
+},{}],20:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -6743,7 +6265,7 @@ Log.emitter = new _events2.default();
 
 exports.default = Log;
 
-},{"events":2}],22:[function(_dereq_,module,exports){
+},{"events":2}],21:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -6820,7 +6342,7 @@ Polyfill.install();
 
 exports.default = Polyfill;
 
-},{"es6-promise":1}],23:[function(_dereq_,module,exports){
+},{"es6-promise":1}],22:[function(_dereq_,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
